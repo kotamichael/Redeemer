@@ -85,7 +85,7 @@ with the resulting output being similiar to this:
 ```
 
 ![alt text](https://i.imgur.com/OjRJXcS.png)
-<sup>The JSON output</sup>
+<sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
 
 ## Boaz
 
