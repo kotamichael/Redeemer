@@ -24,7 +24,7 @@ import os
 my_trader = Robinhood();
 
 #LOGIN Place your credentials here:
-my_trader.login(username="dsm080993@gmail.com", password="iy'LaCAQpfdX")
+my_trader.login(username="YOUR_USERNAME", password="YOUR_PASSWORD")
 
 #List of stock symbols. Substitute for those which you desire.
 fieldsToGlean = 'MSFT','GOOG','AAPL'
