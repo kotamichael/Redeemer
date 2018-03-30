@@ -54,7 +54,9 @@ def glean(stock):
 	data = []
 
 	#Beautifies the maneuver which places the Update time as the index
-	timeIndex = ("\n  \"{}\": ".format(quote_info["updated_at"]))
+	time = (quote_info["updated_at"])
+	cleanTime = (time.replace('T', ' ')).rstrip('Z')
+	timeIndex = ("\n  \"{}\": ".format(cleanTime))
 
 	#Checks for preexisting files with this symbol's data. If not it makes one.
 	if not os.path.isfile(fname):
