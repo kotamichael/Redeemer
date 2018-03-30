@@ -54,7 +54,7 @@ def glean(stock):
 	data = []
 
 	#Beautifies the maneuver which places the Update time as the index
-	timeIndex = ("{{\n  \"{}\": ".format(quote_info["updated_at"]))
+	timeIndex = ("\n  \"{}\": ".format(quote_info["updated_at"]))
 
 	#Checks for preexisting files with this symbol's data. If not it makes one.
 	if not os.path.isfile(fname):
@@ -67,7 +67,7 @@ def glean(stock):
 
 		#Inserts the json data into the empty list in order to put it in the file.
 		with open(fname, mode='a') as f:
-			f.write(timeIndex)
+			f.write("{{{}".format(timeIndex))
 			json.dump(quote_info, f)
 
 		#Adds closing curly brace to maintain JSON structure
