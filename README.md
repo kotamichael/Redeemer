@@ -87,6 +87,13 @@ with the resulting output being similiar to this:
 ![alt text](https://i.imgur.com/OjRJXcS.png)
 <sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
 
+The easiest way to analyse the data in these files is by reading them into Pandas.  I've created a simple example script anyone can use to plot their data.  When you run the program it will plot the ask price according to the time and date associated with the JSON data.  The example pulls from Microsoft (MSFT) data, so in order to run it, you need to first run 'redeemer.py' requesting the MSFT data to create the datastore.  Then you can simply call ```python analysis-example.py``` and it will plot the data.  When you close the plot window, it will print to the console the data as a Pandas DataFrame.  It should be pretty simple to customize this is in a myriad of ways.
+
+![alt text](https://i.imgur.com/bRLWv5l.png)
+![alt text](https://i.imgur.com/Dte2mod.png)
+
+
+
 ## Boaz
 
 Because Ruth gleans directly from the field of the Robinhood API, there's no need to construct a complicated interaction of multiple APIs. Everything can be done directly on Robinhood.  Boaz buys from the same place the Ruth gleans. Boaz doesn't yet have his own function on the redeemer platform, but check the ```boaz_example_scripts.py``` for some examples of how Boaz has the capability to execute buys and sells once Naomi is instituted. 
