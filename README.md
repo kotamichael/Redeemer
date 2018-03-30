@@ -14,10 +14,6 @@ Leqet is an old Hebrew concept.  In order to protect the more disadvantaged memb
 
 See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-improvements) for more.
 
-## -----------------IMPORTANT NOTICE REGARDING V2.0 ------------
-
-For those select few of you who joined when it was just lonely Ruth, this new rollout is a massive overhaul. Boaz has caught Ruth gleaning in his field, and the romance has begun.  In order to begin this beautiful trilogy, the user must delete the old ```Redeemer``` program and start--<em>almost</em>--from scratch.  But it will be "Oh, so worth it!"  These instructions have been updated accordingly. Enjoy and God bless!
-
 ## CONTENTS  -->  (At a Glance)
 
 <ol type="I">
