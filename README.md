@@ -18,6 +18,27 @@ See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-impro
 
 For those select few of you who joined when it was just lonely Ruth, this new rollout is a massive overhaul. Boaz has caught Ruth gleaning in his field, and the romance has begun.  In order to begin this beautiful trilogy, the user must delete the old ```Redeemer``` program and start--<em>almost</em>--from scratch.  But it will be "Oh, so worth it!"  These instructions have been updated accordingly. Enjoy and God bless!
 
+## CONTENTS
+
+<ol type="I">
+	<li>https://github.com/kotamichael/Redeemer#getting-started</li>
+	<li>https://github.com/kotamichael/Redeemer#downloading-the-project</li>
+	<li>https://github.com/kotamichael/Redeemer#setting-up-the-environment</li>
+		<ol type="i">
+			<li>https://github.com/kotamichael/Redeemer#setting-up-the-environment</li>
+			<li>https://github.com/kotamichael/Redeemer#credentials</li>
+		</ol>
+	<li>https://github.com/kotamichael/Redeemer#ruth</li>
+	<li>https://github.com/kotamichael/Redeemer#boaz</li>
+	<li>https://github.com/kotamichael/Redeemer#running-the-program</li>
+	<li>https://github.com/kotamichael/Redeemer#interacting-with-and-editing-the-program</li>
+	<li>https://github.com/kotamichael/Redeemer#future-improvements</li>
+		<ol type="i">
+			<li>https://github.com/kotamichael/Redeemer#naomi</li>
+			<li>https://github.com/kotamichael/Redeemer#boaz-1</li>
+		</ol>
+	<li>https://github.com/kotamichael/Redeemer#happy-trails</li>
+</ol>
 
 ## GETTING STARTED
 
@@ -90,8 +111,6 @@ with the resulting output being similiar to this:
 The easiest way to analyse the data in these files is by reading them into Pandas.  I've created a simple example script anyone can use to plot their data.  When you run the program it will plot the ask price according to the time and date associated with the JSON data.  The example pulls from Microsoft (MSFT) data, so in order to run it, you need to first run 'redeemer.py' requesting the MSFT data to create the datastore.  Then you can simply call ```python analysis-example.py``` and it will plot the data.  When you close the plot window, it will print to the console the data as a Pandas DataFrame.  It should be pretty simple to customize this is in a myriad of ways.
 
 ![alt text](https://i.imgur.com/bRLWv5l.png)![alt text](https://i.imgur.com/Dte2mod.png)
-
-
 
 ## Boaz
 
