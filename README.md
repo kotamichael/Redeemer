@@ -21,23 +21,23 @@ For those select few of you who joined when it was just lonely Ruth, this new ro
 ## CONTENTS
 
 <ol type="I">
-	<li>https://github.com/kotamichael/Redeemer#getting-started</li>
-	<li>https://github.com/kotamichael/Redeemer#downloading-the-project</li>
-	<li>https://github.com/kotamichael/Redeemer#setting-up-the-environment</li>
+	<li>Getting Started(https://github.com/kotamichael/Redeemer#getting-started)</li>
+	<li>Downloading the Project(https://github.com/kotamichael/Redeemer#downloading-the-project)</li>
+	<li>Setting Up the Environment(https://github.com/kotamichael/Redeemer#setting-up-the-environment)</li>
 		<ol type="i">
-			<li>https://github.com/kotamichael/Redeemer#setting-up-the-environment</li>
-			<li>https://github.com/kotamichael/Redeemer#credentials</li>
+			<li>Robinhood(https://github.com/kotamichael/Redeemer#robinhood)</li>
+			<li>Credentials(https://github.com/kotamichael/Redeemer#credentials)</li>
 		</ol>
-	<li>https://github.com/kotamichael/Redeemer#ruth</li>
-	<li>https://github.com/kotamichael/Redeemer#boaz</li>
-	<li>https://github.com/kotamichael/Redeemer#running-the-program</li>
-	<li>https://github.com/kotamichael/Redeemer#interacting-with-and-editing-the-program</li>
-	<li>https://github.com/kotamichael/Redeemer#future-improvements</li>
+	<li>Ruth(https://github.com/kotamichael/Redeemer#ruth)</li>
+	<li>Boaz(https://github.com/kotamichael/Redeemer#boaz)</li>
+	<li>Running the Program(https://github.com/kotamichael/Redeemer#running-the-program)</li>
+	<li>Interacting with and Editing the Program(https://github.com/kotamichael/Redeemer#interacting-with-and-editing-the-program)</li>
+	<li>Future Improvements(https://github.com/kotamichael/Redeemer#future-improvements)</li>
 		<ol type="i">
-			<li>https://github.com/kotamichael/Redeemer#naomi</li>
-			<li>https://github.com/kotamichael/Redeemer#boaz-1</li>
+			<li>Naomi(https://github.com/kotamichael/Redeemer#naomi)</li>
+			<li>Boaz(https://github.com/kotamichael/Redeemer#boaz-1)</li>
 		</ol>
-	<li>https://github.com/kotamichael/Redeemer#happy-trails</li>
+	<li>(https://github.com/kotamichael/Redeemer#happy-trails)</li>
 </ol>
 
 ## GETTING STARTED
