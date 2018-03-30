@@ -24,7 +24,7 @@ import os
 my_trader = Robinhood();
 
 #LOGIN Place your credentials here:
-my_trader.login(username="YOUR_USERNAME", password="YOUR_PASSWORD")
+my_trader.login(username="dsm080993@gmail.com", password="iy'LaCAQpfdX")
 
 #List of stock symbols. Substitute for those which you desire.
 fieldsToGlean = 'MSFT','GOOG','AAPL'
@@ -52,41 +52,55 @@ def glean(stock):
 	#######  W R I T E   I N F O   T O   J S O N   F I L E ######
 	fname = '{}.json'.format(stock)
 	data = []
+
+	#Beautifies the maneuver which places the Update time as the index
+	timeIndex = ("{{\n  \"{}\": ".format(quote_info["updated_at"]))
+
+	#Checks for preexisting files with this symbol's data. If not it makes one.
 	if not os.path.isfile(fname):
 
+		#Prints one-time graphic content on startup
 		global gleanSymbol
 		print("{}".format(gleanSymbol))
 		gleanSymbol = "Gleaning..."
 		print("{}".format(stock))
-		data.append(quote_info)
-		with open(fname, mode='a') as f:
-			f.write("{{\n  \"{}\": ".format(quote_info["updated_at"]))
-			f.write(json.dumps(quote_info, indent=4, sort_keys=True,
-				separators=(',', ': '), ensure_ascii=False))
 
+		#Inserts the json data into the empty list in order to put it in the file.
+		with open(fname, mode='a') as f:
+			f.write(timeIndex)
+			json.dump(quote_info, f)
+
+		#Adds closing curly brace to maintain JSON structure
 		with open(fname, mode='ab+') as b:
 			b.seek(-1, 1)
 			b.truncate()
-			b.write('  }\n}'.encode('utf8'))
+			b.write('}\n}'.encode('utf8'))
+	
+	#If the file DID already exist this updates it with the new data
 	else:
+		#Updates user with which stock is being handled
 		print("Gleaning {}...".format(stock))
+
+		#Inserts the comma between entries before adding new entry
 		with open(fname, mode='ab+') as s:
 			s.seek(-2, 1)
 			s.truncate()
 			s.write(','.encode('utf8'))
 
+		#Adds time index followed by new entry
 		with open(fname, mode='a') as f:
-			f.write("\n  \"{}\": ".format(quote_info["updated_at"]))
-			f.write(json.dumps(quote_info, indent=4, sort_keys=True,
-				separators=(',', ': '), ensure_ascii=False))
+			f.write(timeIndex)
+			json.dump(quote_info, f)
 
+		#Adds closing curly-brace to maintain proper JSON formatting as data builds
 		with open(fname, mode='ab+') as b:
 			b.seek(-1, 1)
 			b.truncate()
-			b.write('  }\n}'.encode('utf8'))
+			b.write('}\n}'.encode('utf8'))
 
 	print("Success!\n");
 
+#Iterates through list of stocks at top of file running them through the glean() function.
 def ruthGlean():
 	for eachStock in fieldsToGlean:
 		glean(eachStock)
@@ -96,6 +110,6 @@ Schedule gleaning: default 1 second, but you can substitute .minutes
 etc. This is only to demonstrate speed and efficiency. For more meaningful
 data, maybe try more like 10 seconds.
 '''
-schedule.every(1).minutes.do(ruthGlean)
+schedule.every(1).seconds.do(ruthGlean)
 while True:
 	schedule.run_pending()
