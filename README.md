@@ -70,7 +70,7 @@ It's easy to change the increments, simply look [here](https://github.com/kotami
 Once the wait has expired, Ruth executes the request for data, and receives it back in JSON format.  This is then transcribed into files named after the specified equity.  For the Microsoft (MSFT) symbol, the file would be named 'MSFT.json'.  Ruth will run uniterupted at the specified wait period until you terminate the program: ```ctrl + c```.  This JSON file is indexed according to the "updated_at" key within the data.  This means the user can call out time intervals by referencing this timestamp: ```data["2018-03-30T09:30:00"]```.  This makes the data easy to pull into the Pandas dataframe in order to play around with it.
 
 ![alt text](https://i.imgur.com/mhlEk0E.png)
-<sup>The resulting Json output</sup>
+<sup>The resulting JSON output</sup>
 
 ## Boaz
 
