@@ -58,7 +58,7 @@ def glean(stock):
 	cleanTime = (timeStamp.replace('T', ' ')).rstrip('Z')
 
 	#Sets time-based variables for use in the directory structure
-	time = timeStamp[11:]
+	time = timeStamp[11:][:-1]
 	year = timeStamp[:4]
 	month = timeStamp[:7][5:]
 	day = timeStamp[8:][:2]
