@@ -23,6 +23,7 @@ Data files are now stored in a sorted directory structured first by year, then m
 
 This makes it easier to locate and scale datastores as time goes on and it accumulates.
 
+<div align="center">![alt text](https://i.imgur.com/8fJEI5H.png)</div>
 
 ## CONTENTS
 
@@ -94,15 +95,17 @@ It's easy to change the increments, simply look [here](https://github.com/kotami
 
 ![alt text](https://i.imgur.com/9L7XQsH.png)
 
-Once the wait has expired, Ruth executes the request for data, and receives it back in JSON format.  This is then transcribed into files named after the specified equity.  For the Microsoft (MSFT) symbol, the file would be named 'MSFT.json'.  Ruth will run uniterupted at the specified wait period until you terminate the program: ```ctrl + c```.  This JSON file is indexed according to the "updated_at" key within the data.  This means the user can call out time intervals by referencing this timestamp: ```data["2018-03-30 09:30:00"]```.  This makes the data easy to pull into the Pandas dataframe in order to play around with it. In order to call for the bid price at 12:30 on April 4 for instance, the call would look like this:
+Once the wait has expired, Ruth executes the request for data, and receives it back in JSON format.  This is then transcribed into files named after the specified equity.  For the Microsoft (MSFT) symbol, the file would be named 'MSFT.json'.  Ruth will run uniterupted at the specified wait period until you terminate the program: ```ctrl + c```.  
+
+As the update flash message at the top of this README makes clear, Ruth will gather the data and sort it into various files and directories corresponding to the date the data represents. Within the JSON file data is indexed according to the "updated_at" key.  This means the user can call out time intervals by referencing this timestamp: ```data["09:30:00"]```.  This makes the data easy to pull into the Pandas dataframe in order to play around with it. In order to call for the bid price at 12:30 on April 8, 2004 for instance, the call would look like this:
 
 ```python
 import json
 
-with open('MSFT.json') as rFile:
+with open('2004/04/08/MSFT.json') as rFile:
 		data = json.load(rFile)
 
-print data["2018-04-04 12:30:00"]["bid_price"]
+print data["12:30:00"]["bid_price"]
 ```
 
 with the resulting output being similiar to this:
@@ -111,7 +114,9 @@ with the resulting output being similiar to this:
 "1028.0000"
 ```
 
-![alt text](https://i.imgur.com/OjRJXcS.png)
+It's not hard to imagine how one could design larger queries accounting for whole weeks, months and years worth of ticks.
+
+![alt text](https://i.imgur.com/8fJEI5H.png)
 <sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
 
 The easiest way to analyse the data in these files is by reading them into Pandas.  I've created a simple example script anyone can use to plot their data.  When you run the program it will plot the ask price according to the time and date associated with the JSON data.  The example pulls from Microsoft (MSFT) data, so in order to run it, you need to first run 'redeemer.py' requesting the MSFT data to create the datastore.  Then you can simply call ```python analysis-example.py``` and it will plot the data.  When you close the plot window, it will print to the console the data as a Pandas DataFrame.  It should be pretty simple to customize this is in a myriad of ways.
