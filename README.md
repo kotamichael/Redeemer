@@ -23,7 +23,7 @@ Data files are now stored in a sorted directory structured first by year, then m
 
 This makes it easier to locate and scale datastores as time goes on and it accumulates.
 
-<div align="center">![alt text](https://i.imgur.com/8fJEI5H.png)</div>
+![alt text](https://i.imgur.com/8fJEI5H.png)
 
 ## CONTENTS
 
