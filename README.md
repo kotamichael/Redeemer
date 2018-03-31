@@ -15,7 +15,7 @@ Leqet is an old Hebrew concept.  In order to protect the more disadvantaged memb
 See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-improvements) for more.
 
 
-## N E W E S T   U P D A T E
+## Newest Update
 
 Data files are now stored in a sorted directory structured first by year, then month then day and finally named after the ticker symbol the data represents.  For example: data from April 10, 1996 for Microsoft(MSFT) would be located at:
 
