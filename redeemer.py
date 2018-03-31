@@ -125,6 +125,6 @@ Schedule gleaning: default 1 second, but you can substitute .minutes
 etc. This is only to demonstrate speed and efficiency. For more meaningful
 data, maybe try more like 10 seconds.
 '''
-schedule.every(0.2).seconds.do(ruthGlean)
+schedule.every(1).seconds.do(ruthGlean)
 while True:
 	schedule.run_pending()

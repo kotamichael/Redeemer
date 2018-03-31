@@ -9,6 +9,6 @@ data = data.loc[:,['ask_price']]
 data.index.name = 'dateTime'
 
 data.plot()
-plt.title('Made up Intraday Ask Price for MSFT over 11 mins (1 min)')
+plt.title('Intraday Ask Price for MSFT(1 sec)')
 plt.show()
 print(data)
