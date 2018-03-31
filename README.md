@@ -15,7 +15,7 @@ Leqet is an old Hebrew concept.  In order to protect the more disadvantaged memb
 See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-improvements) for more.
 
 
-## >><<>><<---------------------N E W E S T   U P D A T E------------------->><<>><<
+## N E W E S T   U P D A T E
 
 Data files are now stored in a sorted directory structured first by year, then month then day and finally named after the ticker symbol the data represents.  For example: data from April 10, 1996 for Microsoft(MSFT) would be located at:
 
@@ -24,7 +24,7 @@ Data files are now stored in a sorted directory structured first by year, then m
 This makes it easier to locate and scale datastores as time goes on and it accumulates.
 
 
-## CONTENTS  -->  (At a Glance)
+## CONTENTS
 
 <ol type="I">
 	<li><a href="https://github.com/kotamichael/Redeemer#getting-started">Getting Started</a></li>
