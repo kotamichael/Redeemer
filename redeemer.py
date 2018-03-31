@@ -27,7 +27,7 @@ my_trader = Robinhood();
 my_trader.login(username="YOUR_USERNAME", password="YOUR_PASSWORD")
 
 #List of stock symbols. Substitute for those which you desire.
-fieldsToGlean = 'MSFT','GOOG','AAPL'
+fieldsToGlean = 'MSFT','GOOG','AAPL','FB','TSLA','EBAY','BAC'
 
 #Gleaning graphic
 gleanSymbol = """
@@ -50,13 +50,26 @@ def glean(stock):
 	quote_info = my_trader.quote_data(stock)
 
 	#######  W R I T E   I N F O   T O   J S O N   F I L E ######
-	fname = '{}.json'.format(stock)
+
 	data = []
 
 	#Beautifies the maneuver which places the Update time as the index
-	time = (quote_info["updated_at"])
-	cleanTime = (time.replace('T', ' ')).rstrip('Z')
-	timeIndex = ("\n  \"{}\": ".format(cleanTime))
+	timeStamp = (quote_info["updated_at"])
+	cleanTime = (timeStamp.replace('T', ' ')).rstrip('Z')
+
+	#Sets time-based variables for use in the directory structure
+	time = timeStamp[11:]
+	year = timeStamp[:4]
+	month = timeStamp[:7][5:]
+	day = timeStamp[8:][:2]
+	timeIndex = ("\n  \"{}\": ".format(time))
+	path = "{}/{}/{}/".format(year, month, day)
+	filename = '{}.json'.format(stock)
+	fname = "{}{}".format(path, filename)
+
+	#Checks for preexisting members of the path and generates any missing part.
+	if not os.path.exists(path):
+	    os.makedirs(path)
 
 	#Checks for preexisting files with this symbol's data. If not it makes one.
 	if not os.path.isfile(fname):
@@ -112,6 +125,6 @@ Schedule gleaning: default 1 second, but you can substitute .minutes
 etc. This is only to demonstrate speed and efficiency. For more meaningful
 data, maybe try more like 10 seconds.
 '''
-schedule.every(1).seconds.do(ruthGlean)
+schedule.every(0.2).seconds.do(ruthGlean)
 while True:
 	schedule.run_pending()
