@@ -124,7 +124,7 @@ The easiest way to analyse the data in these files is by reading them into Panda
 For example, I designed the plot to display the bid-ask spread and the bid-ask volume spread.  But this data is good for more than just plotting.
 
 ![alt text](https://i.imgur.com/EBgk4Gq.png)
-![alt text](https://i.imgur.com/vgHa0J8.png)
+![alt text](https://i.imgur.com/xtWilTm.png)
 
 ## Boaz
 
