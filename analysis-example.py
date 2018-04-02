@@ -20,7 +20,6 @@ ax2.plot(MSFT['ask_size'], label='bid price')
 ax2.plot(MSFT['bid_size'], label='bid price')
 
 plt.tight_layout()
-plt.title('Intraday Ask and bid prices for MSFT(2 sec)')
 plt.show()
 
 print(MSFT)
