@@ -116,12 +116,15 @@ with the resulting output being similiar to this:
 
 It's not hard to imagine how one could design larger queries accounting for whole weeks, months and years worth of ticks.
 
-![alt text](https://i.imgur.com/dBLFX1U.png)
+![alt text](https://i.imgur.com/lKonzcP.png)
 <sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
 
 The easiest way to analyse the data in these files is by reading them into Pandas.  I've created a simple example script anyone can use to plot their data.  When you run the program it will plot the ask price according to the time and date associated with the JSON data.  The example pulls from Microsoft (MSFT) data, so in order to run it, you need to first run 'redeemer.py' requesting the MSFT data to create the datastore.  This operation will create a much more interesting data visualization if the data is coming from a living market, so run it while the market is open.  Then you can simply call ```python analysis-example.py``` and it will plot the data.  When you close the plot window, it will print to the console the data as a Pandas DataFrame.  It should be pretty simple to customize this is in a myriad of ways.
 
-![alt text](https://i.imgur.com/bRLWv5l.png)![alt text](https://i.imgur.com/Dte2mod.png)
+For example, I designed the plot to display the bid-ask spread and the bid-ask volume spread.  But this data is good for more than just plotting.
+
+![alt text](https://i.imgur.com/EBgk4Gq.png)
+![alt text](https://i.imgur.com/vgHa0J8.png)
 
 ## Boaz
 
