@@ -139,6 +139,8 @@ def closing_bell():
 	schedule.clear('gather')
 	print("Done!")
 
+'''Set start and end times of gathering data. No need to end program unless chaning
+the default times'''
 schedule.every().day.at("9:30").do(opening_bell)
 schedule.every().day.at("16:30").do(closing_bell)
 
