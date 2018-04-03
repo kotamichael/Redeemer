@@ -17,8 +17,13 @@ Conda prompt dedicated to running this perpetually.
 from Robinhood import Robinhood
 import schedule
 import time
+from time import strftime
+from datetime import datetime
 import json
 import os
+
+#Initial value for schedule
+run = 1
 
 #Setup connection
 my_trader = Robinhood();
@@ -47,6 +52,7 @@ gleanSymbol = """
 
 #Method to get the stock quote information from the Robinhood API
 def glean(stock):
+	print(datetime.now().strftime('%H:%M:%S'))
 	quote_info = my_trader.quote_data(stock)
 
 	#######  W R I T E   I N F O   T O   J S O N   F I L E ######
@@ -55,7 +61,6 @@ def glean(stock):
 
 	#Beautifies the maneuver which places the Update time as the index
 	timeStamp = (quote_info["updated_at"])
-	cleanTime = (timeStamp.replace('T', ' ')).rstrip('Z')
 
 	#Sets time-based variables for use in the directory structure
 	time = timeStamp[11:][:-1]
@@ -66,6 +71,8 @@ def glean(stock):
 	path = "{}/{}/{}/".format(year, month, day)
 	filename = '{}.json'.format(stock)
 	fname = "{}{}".format(path, filename)
+
+	#Based on time, run the program or not
 
 	#Checks for preexisting members of the path and generates any missing part.
 	if not os.path.exists(path):
@@ -125,6 +132,15 @@ Schedule gleaning: default 1 second, but you can substitute .minutes
 etc. This is only to demonstrate speed and efficiency. For more meaningful
 data, maybe try more like 10 seconds.
 '''
-schedule.every(1).seconds.do(ruthGlean)
+def opening_bell():
+	schedule.every(1).minutes.do(ruthGlean).tag('gather')
+
+def closing_bell():
+	schedule.clear('gather')
+	print("Done!")
+
+schedule.every().day.at("9:30").do(opening_bell)
+schedule.every().day.at("16:30").do(closing_bell)
+
 while True:
 	schedule.run_pending()
