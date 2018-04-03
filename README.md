@@ -17,13 +17,7 @@ See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-impro
 
 ## Newest Update
 
-Data files are now stored in a sorted directory structured first by year, then month then day and finally named after the ticker symbol the data represents.  For example: data from April 10, 1996 for Microsoft(MSFT) would be located at:
-
-```~/1996/04/10/MSFT.json```
-
-This makes it easier to locate and scale datastores as time goes on and it accumulates.
-
-![alt text](https://i.imgur.com/8fJEI5H.png)
+Ruth will now wake up right as opening bell sounds (9:30 ET) and leave the fields at closing bell (4:30 ET). This of course can be modified, but this is the default setting. Look for inline documentation for instructions on customization.  I've set up the timing in the most intuitive way to myself, which was to set her to your computer's clock. So if you're not on ET, you'll have to adjust the start time for gathering data.
 
 ## CONTENTS
 
@@ -36,6 +30,10 @@ This makes it easier to locate and scale datastores as time goes on and it accum
 			<li><a href="https://github.com/kotamichael/Redeemer#credentials">Credentials</a></li>
 		</ol>
 	<li><a href="https://github.com/kotamichael/Redeemer#ruth">Ruth</a></li>
+		<ol type="i">
+		<li><a href="https://github.com/kotamichael/Redeemer#robinhood">Data Storage</a></li>
+		<li><a href="https://github.com/kotamichael/Redeemer#robinhood">Data Analysis</a></li>
+		</ol>
 	<li><a href="https://github.com/kotamichael/Redeemer#boaz">Boaz</a></li>
 	<li><a href="https://github.com/kotamichael/Redeemer#running-the-program">Running the Program</a></li>
 	<li><a href="https://github.com/kotamichael/Redeemer#interacting-with-and-editing-the-program">Interacting with and Editing the Program</a></li>
@@ -89,6 +87,8 @@ Replace the placeholders "YOUR_USERNAME" and "YOUR_PASSWORD" with... what? You g
 
 ## Ruth
 
+Ruth will now wake up right as opening bell sounds (9:30 ET) and leave the fields at closing bell (4:30 ET). This of course can be modified, but this is the default setting. Look for inline documentation for instructions on customization.  I've set up the timing in the most intuitive way to myself, which was to set her to your computer's clock. So if you're not on ET, you'll have to adjust the start time for gathering data.
+
 Ruth is a function within the Redeemer program.  That's a fancy word for a piece of the program that does some specified work.  ```ruthGlean()``` is the function that iterates through the list of stocks you create and gleans the information from the Robinhood API.  By default, Ruth gleans every stock on 1 second increments, simply because I'm impatient when developing--she waits the given wait period before starting and to sit and watch her wait over and over again would be a colassal misuse of time.
 
 It's easy to change the increments, simply look [here](https://github.com/kotamichael/Redeemer#interacting-with-and-editing-the-program).
@@ -97,7 +97,17 @@ It's easy to change the increments, simply look [here](https://github.com/kotami
 
 Once the wait has expired, Ruth executes the request for data, and receives it back in JSON format.  This is then transcribed into files named after the specified equity.  For the Microsoft (MSFT) symbol, the file would be named 'MSFT.json'.  Ruth will run uniterupted at the specified wait period until you terminate the program: ```ctrl + c```.  
 
-As the update flash message at the top of this README makes clear, Ruth will gather the data and sort it into various files and directories corresponding to the date the data represents. Within the JSON file data is indexed according to the "updated_at" key.  This means the user can call out time intervals by referencing this timestamp: ```data["09:30:00"]```.  This makes the data easy to pull into the Pandas dataframe in order to play around with it. In order to call for the bid price at 12:30 on April 8, 2004 for instance, the call would look like this:
+### Data Storage
+
+Data files are stored in a sorted directory structured first by year, then month then day and finally named after the ticker symbol the data represents.  For example: data from April 10, 1996 for Microsoft(MSFT) would be located at:
+
+```~/1996/04/10/MSFT.json```
+
+This makes it easier to locate and scale datastores as time goes on and it accumulates.
+
+![alt text](https://i.imgur.com/8fJEI5H.png)
+
+Within the JSON file data is indexed according to the "updated_at" key.  This means the user can call out time intervals by referencing this timestamp: ```data["09:30:00"]```.  This makes the data easy to pull into the Pandas dataframe in order to play around with it. In order to call for the bid price at 12:30 on April 8, 2004 for instance, the call would look like this:
 
 ```python
 import json
@@ -118,6 +128,8 @@ It's not hard to imagine how one could design larger queries accounting for whol
 
 ![alt text](https://i.imgur.com/lKonzcP.png)
 <sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
+
+### Data Analysis
 
 The easiest way to analyse the data in these files is by reading them into Pandas.  I've created a simple example script anyone can use to plot their data.  When you run the program it will plot the ask price according to the time and date associated with the JSON data.  The example pulls from Microsoft (MSFT) data, so in order to run it, you need to first run 'redeemer.py' requesting the MSFT data to create the datastore.  This operation will create a much more interesting data visualization if the data is coming from a living market, so run it while the market is open.  Then you can simply call ```python analysis-example.py``` and it will plot the data.  When you close the plot window, it will print to the console the data as a Pandas DataFrame.  It should be pretty simple to customize this is in a myriad of ways.
 
