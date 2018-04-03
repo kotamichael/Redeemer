@@ -31,8 +31,8 @@ Ruth will now wake up right as opening bell sounds (9:30 ET) and leave the field
 		</ol>
 	<li><a href="https://github.com/kotamichael/Redeemer#ruth">Ruth</a></li>
 		<ol type="i">
-		<li><a href="https://github.com/kotamichael/Redeemer#robinhood">Data Storage</a></li>
-		<li><a href="https://github.com/kotamichael/Redeemer#robinhood">Data Analysis</a></li>
+		<li><a href="https://github.com/kotamichael/Redeemer#data-storage">Data Storage</a></li>
+		<li><a href="https://github.com/kotamichael/Redeemer#data-analysis">Data Analysis</a></li>
 		</ol>
 	<li><a href="https://github.com/kotamichael/Redeemer#boaz">Boaz</a></li>
 	<li><a href="https://github.com/kotamichael/Redeemer#running-the-program">Running the Program</a></li>
