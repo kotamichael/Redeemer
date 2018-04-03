@@ -19,6 +19,8 @@ See ["Future Improvements"](https://github.com/kotamichael/Redeemer#future-impro
 
 Ruth will now wake up right as opening bell sounds (9:30 ET) and leave the fields at closing bell (4:30 ET). This of course can be modified, but this is the default setting. Look for inline documentation for instructions on customization.  I've set up the timing in the most intuitive way to myself, which was to set her to your computer's clock. So if you're not on ET, you'll have to adjust the start time for gathering data.
 
+All this to say: if you run the program once, you never need to stop it or run it again. It's now got a life and schedule all of its own.
+
 ## CONTENTS
 
 <ol type="I">
