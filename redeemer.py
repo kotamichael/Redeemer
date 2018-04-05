@@ -1,19 +1,20 @@
+redeemer = """\n\n\n\n
+
+     :::::::..  .,:::::::::::::-.   .,:::::: .,::::::  .        :   .,::::::  :::::::..   
+     ;;;;``;;;; ;;;;""`" ;;,   `';,,;;;;""`" ;;;;""`"  ;;,.    ;;;  ;;;;""`"  ;;;;``;;;;  
+      [[[,/[[['  [[cccc  `[[     [[  [[cccc   [[cccc   [[[[, ,[[[[,  [[cccc    [[[,/[[['  
+      $$$$$$c    $$""`"   $$,    $$  $$""`"   $$""`"   $$$$$$$$"$$$  $$""`"    $$$$$$c    
+      888b "88bo,888oo,__ 888_,o8P'  888oo,__ 888oo,__ 888 Y88" 888o8888ooo,__ 8888b 88bo,
+      MMMM   "W" ""`"YUMMMMMMMP"`    ""`"YUMMM`"'"YUMMMMMM  M'  "MMM"'""YUMMMMMMMM   "WW"  
+         
 """
 
-:::::::..  .,:::::::::::::-.   .,:::::: .,::::::  .        :   .,::::::  :::::::..   
-;;;;``;;;; ;;;;""`" ;;,   `';,,;;;;""`" ;;;;""`"  ;;,.    ;;;  ;;;;""`"  ;;;;``;;;;  
- [[[,/[[['  [[cccc  `[[     [[  [[cccc   [[cccc   [[[[, ,[[[[,  [[cccc    [[[,/[[['  
- $$$$$$c    $$""`"   $$,    $$  $$""`"   $$""`"   $$$$$$$$"$$$  $$""`"    $$$$$$c    
- 888b "88bo,888oo,__ 888_,o8P'  888oo,__ 888oo,__ 888 Y88" 888o8888ooo,__ 8888b 88bo,
- MMMM   "W" ""`"YUMMMMMMMP"`    ""`"YUMMM`"'"YUMMMMMM  M'  "MMM"'""YUMMMMMMMM   "WW"  
-
-
+'''
 Next task is to make this a scheduled program that only runs from
 opening to closing during trading days. That way you could have a
 Conda prompt dedicated to running this perpetually.
+'''
 
-
-"""
 from Robinhood import Robinhood
 import schedule
 import time
@@ -22,14 +23,11 @@ from datetime import datetime
 import json
 import os
 
-#Initial value for schedule
-run = 1
-
 #Setup connection
 my_trader = Robinhood();
 
 #LOGIN Place your credentials here:
-my_trader.login(username="YOUR_USERNAME", password="YOUR_PASSWORD")
+my_trader.login(username="dsm080993@gmail.com", password="iy'LaCAQpfdX")
 
 #List of stock symbols. Substitute for those which you desire.
 fieldsToGlean = 'MSFT','GOOG','AAPL','FB','TSLA','EBAY','BAC'
@@ -42,13 +40,17 @@ gleanSymbol = """
 				|.  |   |__|_____|___._|__|__|__|__|__|___  |__|__|__|
 				|:  1   |                             |_____|         
 				|::.. . |                                             
-				`-------'
+				`-------'"""
 
-		But Ruth said, “Do not urge me to leave you or to return from following
-		you. For where you go I will go, and where you lodge I will lodge.
-		Your people shall be my people, and your God my God. Where you die I will
-		die, and there will I be buried. May the LORD do so to me and more also
-		if anything but death parts me from you.” (Ruth 1:16-17)\n"""
+verse = '''
+	Ruth said, “Do not urge me to leave you or to return from following
+	you. For where you go I will go, and where you lodge I will lodge.
+	Your people shall be my people, and your God my God. Where you die I will
+	die, and there will I be buried. May the LORD do so to me and more also
+	if anything but death parts me from you.” (Ruth 1:16-17)\n\n'''
+
+print("{}".format(redeemer))
+print("{}".format(verse))
 
 #Method to get the stock quote information from the Robinhood API
 def glean(stock):
@@ -72,8 +74,6 @@ def glean(stock):
 	filename = '{}.json'.format(stock)
 	fname = "{}{}".format(path, filename)
 
-	#Based on time, run the program or not
-
 	#Checks for preexisting members of the path and generates any missing part.
 	if not os.path.exists(path):
 	    os.makedirs(path)
@@ -81,11 +81,10 @@ def glean(stock):
 	#Checks for preexisting files with this symbol's data. If not it makes one.
 	if not os.path.isfile(fname):
 
-		#Prints one-time graphic content on startup
+		#Keeps us up to date with where Ruth is in the process.
 		global gleanSymbol
-		print("{}".format(gleanSymbol))
-		gleanSymbol = "Gleaning..."
-		print("{}".format(stock))
+		print(gleanSymbol)
+		gleanSymbol = "Gleaning...{}".format(stock)
 
 		#Inserts the json data into the empty list in order to put it in the file.
 		with open(fname, mode='a') as f:
@@ -139,9 +138,13 @@ def closing_bell():
 	schedule.clear('gather')
 	print("Done!")
 
-'''Set start and end times of gathering data. No need to end program unless chaning
-the default times'''
-schedule.every().day.at("9:30").do(opening_bell)
+'''
+Set start and end times of gathering data. No need to end program unless chaning
+the default times. Set the startup ahead one interval of running, because Ruth will
+wait one run interval before starting. E.g. if she's set to run once every minute, set
+the start time one minute ahead of that desired; for 20 seconds, set her 20 seconds ahead.
+'''
+schedule.every().day.at("9:29").do(opening_bell)
 schedule.every().day.at("16:30").do(closing_bell)
 
 while True:
