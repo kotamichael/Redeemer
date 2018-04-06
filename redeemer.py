@@ -27,7 +27,7 @@ import os
 my_trader = Robinhood();
 
 #LOGIN Place your credentials here:
-my_trader.login(username="YOUR_USERNAME", password="YOUR_PASSWORD")
+my_trader.login(username="dsm080993@gmail.com", password="iy'LaCAQpfdX")
 
 #List of stock symbols. Substitute for those which you desire.
 fieldsToGlean = 'MSFT','GOOG','AAPL','FB','TSLA','EBAY','BAC'
@@ -132,7 +132,7 @@ etc. This is only to demonstrate speed and efficiency. For more meaningful
 data, maybe try more like 10 seconds.
 '''
 def opening_bell():
-	schedule.every(1).minutes.do(ruthGlean).tag('gather')
+	schedule.every(30).seconds.do(ruthGlean).tag('gather')
 
 def closing_bell():
 	schedule.clear('gather')
