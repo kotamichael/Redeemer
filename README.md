@@ -128,10 +128,8 @@ with the resulting output being similiar to this:
 
 It's not hard to imagine how one could design larger queries accounting for whole weeks, months and years worth of ticks.
 
-<figure>
-<img src = "https://i.imgur.com/lKonzcP.png">
-<figcaption>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</figcaption>
-</figure>
+![alt text](https://i.imgur.com/lKonzcP.png)
+<sup>The JSON output. This was snapped on Good Friday; since the markets were closed, nothing was changing.</sup>
 
 ### Data Analysis
 
