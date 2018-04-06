@@ -6,16 +6,11 @@ import matplotlib.pyplot as plt
 
 rootdir = "C:\Annies-Documents\Projects\Redeemer\\2018\\04"
 
+#Iterates through every folder within rootdir and plots every file
 for subdir, dirs, files in os.walk(rootdir):
 	for file in files:
 		print(file)
-		os.path.join(subdir, file)
-		'''		path_to_json = '2018/04/06/'''
-		'''json_files = [pos_json for pos_json in os.listdir(path_to_json)]
 
-		# You must change the date for the file you want to analyse!!!!
-		for file in json_files:
-		'''
 		json_data = pd.read_json('{}'.format(os.path.join(subdir, file)), orient='columns')
 		json_data = pd.read_json(json_data.to_json(), orient='index')
 
