@@ -9,7 +9,7 @@ HERE = path.abspath(path.dirname(__file__))
 __version__ = '1.0.1'
 
 REQUIRES = [
-    'requests>=2.13.0,<=2.18.4',
+    'requests>=2.20.0',
     'six>=1.10.0,<=1.11.0',
 ]
 TEST = [
