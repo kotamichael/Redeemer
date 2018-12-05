@@ -7,17 +7,18 @@ import warnings
 from enum import Enum
 
 #External dependencies
-from six.moves.urllib.parse import unquote
-from six.moves.urllib.request import getproxies
+from six.moves.urllib.parse import unquote  # pylint: disable=E0401
+from six.moves.urllib.request import getproxies  # pylint: disable=E0401
 from six.moves import input
 
 import getpass
 import requests
 import six
+import dateutil
 
 #Application-specific imports
 from . import exceptions as RH_exception
-
+from . import endpoints
 
 class Bounds(Enum):
     """Enum for bounds in `historicals` endpoint """
@@ -36,42 +37,17 @@ class Transaction(Enum):
 class Robinhood:
     """Wrapper class for fetching/parsing Robinhood endpoints """
 
-    endpoints = {
-        "login": "https://api.robinhood.com/api-token-auth/",
-        "logout": "https://api.robinhood.com/api-token-logout/",
-        "investment_profile": "https://api.robinhood.com/user/investment_profile/",
-        "accounts": "https://api.robinhood.com/accounts/",
-        "ach_iav_auth": "https://api.robinhood.com/ach/iav/auth/",
-        "ach_relationships": "https://api.robinhood.com/ach/relationships/",
-        "ach_transfers": "https://api.robinhood.com/ach/transfers/",
-        "applications": "https://api.robinhood.com/applications/",
-        "dividends": "https://api.robinhood.com/dividends/",
-        "edocuments": "https://api.robinhood.com/documents/",
-        "instruments": "https://api.robinhood.com/instruments/",
-        "margin_upgrades": "https://api.robinhood.com/margin/upgrades/",
-        "markets": "https://api.robinhood.com/markets/",
-        "notifications": "https://api.robinhood.com/notifications/",
-        "orders": "https://api.robinhood.com/orders/",
-        "password_reset": "https://api.robinhood.com/password_reset/request/",
-        "portfolios": "https://api.robinhood.com/portfolios/",
-        "positions": "https://api.robinhood.com/positions/",
-        "quotes": "https://api.robinhood.com/quotes/",
-        "historicals": "https://api.robinhood.com/quotes/historicals/",
-        "document_requests": "https://api.robinhood.com/upload/document_requests/",
-        "user": "https://api.robinhood.com/user/",
-        "watchlists": "https://api.robinhood.com/watchlists/",
-        "news": "https://api.robinhood.com/midlands/news/",
-        "fundamentals": "https://api.robinhood.com/fundamentals/",
-    }
-
     session = None
     username = None
     password = None
     headers = None
     auth_token = None
+    refresh_token = None
 
     logger = logging.getLogger('Robinhood')
     logger.addHandler(logging.NullHandler())
+
+    client_id = "c82SH0WZOsabOXGP2sxqcj34FxkvfnWRZBKlBjFS"
 
 
     ###########################################################################
@@ -90,11 +66,18 @@ class Robinhood:
             "Connection": "keep-alive",
             "User-Agent": "Robinhood/823 (iPhone; iOS 7.1.2; Scale/2.00)"
         }
-
         self.session.headers = self.headers
+        self.auth_method = self.login_prompt
 
+    def login_required(function):  # pylint: disable=E0213
+        """ Decorator function that prompts user for login if they are not logged in already. Can be applied to any function using the @ notation. """
+        def wrapper(self, *args, **kwargs):
+            if 'Authorization' not in self.headers:
+                self.auth_method()
+            return function(self, *args, **kwargs)  # pylint: disable=E1102
+        return wrapper
 
-    def login_prompt(self): #pragma: no cover
+    def login_prompt(self):  # pragma: no cover
         """Prompts user for username and password and calls login() """
 
         username = input("Username: ")
@@ -122,25 +105,27 @@ class Robinhood:
         self.password = password
         payload = {
             'password': self.password,
-            'username': self.username
+            'username': self.username,
+            'grant_type': 'password',
+            'client_id': self.client_id
         }
 
         if mfa_code:
             payload['mfa_code'] = mfa_code
-
         try:
-            res = self.session.post(self.endpoints['login'], data=payload)
+            res = self.session.post(endpoints.login(), data=payload, timeout=15)
             res.raise_for_status()
             data = res.json()
         except requests.exceptions.HTTPError:
             raise RH_exception.LoginFailed()
 
-        if 'mfa_required' in data.keys():           #pragma: no cover
-            raise RH_exception.TwoFactorRequired()  #requires a second call to enable 2FA
+        if 'mfa_required' in data.keys():           # pragma: no cover
+            raise RH_exception.TwoFactorRequired()  # requires a second call to enable 2FA
 
-        if 'token' in data.keys():
-            self.auth_token = data['token']
-            self.headers['Authorization'] = 'Token ' + self.auth_token
+        if 'access_token' in data.keys() and 'refresh_token' in data.keys():
+            self.auth_token = data['access_token']
+            self.refresh_token = data['refresh_token']
+            self.headers['Authorization'] = 'Bearer ' + self.auth_token
             return True
 
         return False
@@ -155,7 +140,11 @@ class Robinhood:
         """
 
         try:
-            req = self.session.post(self.endpoints['logout'])
+            payload = {
+                'client_id': self.client_id,
+                'token': self.refresh_token
+            }
+            req = self.session.post(endpoints.logout(), data=payload, timeout=15)
             req.raise_for_status()
         except requests.exceptions.HTTPError as err_msg:
             warnings.warn('Failed to log out ' + repr(err_msg))
@@ -173,8 +162,8 @@ class Robinhood:
     def investment_profile(self):
         """Fetch investment_profile """
 
-        res = self.session.get(self.endpoints['investment_profile'])
-        res.raise_for_status()  #will throw without auth
+        res = self.session.get(endpoints.investment_profile(), timeout=15)
+        res.raise_for_status()  # will throw without auth
         data = res.json()
 
         return data
@@ -190,7 +179,7 @@ class Robinhood:
                 (:obj:`dict`): JSON contents from `instruments` endpoint
         """
 
-        res = self.session.get(self.endpoints['instruments'], params={'query': stock.upper()})
+        res = self.session.get(endpoints.instruments(), params={'query': stock.upper()}, timeout=15)
         res.raise_for_status()
         res = res.json()
 
@@ -210,16 +199,16 @@ class Robinhood:
             Returns:
                 (:obj:`dict`): JSON dict of instrument
         """
-        url = str(self.endpoints['instruments']) + str(id) + "/"
+        url = str(endpoints.instruments()) + "?symbol=" + str(id)
 
         try:
-            req = requests.get(url)
+            req = requests.get(url, timeout=15)
             req.raise_for_status()
             data = req.json()
         except requests.exceptions.HTTPError:
             raise RH_exception.InvalidInstrumentId()
 
-        return data
+        return data['results']
 
 
     def quote_data(self, stock=''):
@@ -235,13 +224,13 @@ class Robinhood:
         url = None
 
         if stock.find(',') == -1:
-            url = str(self.endpoints['quotes']) + str(stock) + "/"
+            url = str(endpoints.quotes()) + str(stock) + "/"
         else:
-            url = str(self.endpoints['quotes']) + "?symbols=" + str(stock)
+            url = str(endpoints.quotes()) + "?symbols=" + str(stock)
 
         #Check for validity of symbol
         try:
-            req = requests.get(url)
+            req = requests.get(url, timeout=15)
             req.raise_for_status()
             data = req.json()
         except requests.exceptions.HTTPError:
@@ -263,10 +252,10 @@ class Robinhood:
                     same order of input args. If any ticker is invalid, a None will occur at that position.
         """
 
-        url = str(self.endpoints['quotes']) + "?symbols=" + ",".join(stocks)
+        url = str(endpoints.quotes()) + "?symbols=" + ",".join(stocks)
 
         try:
-            req = requests.get(url)
+            req = requests.get(url, timeout=15)
             req.raise_for_status()
             data = req.json()
         except requests.exceptions.HTTPError:
@@ -303,7 +292,7 @@ class Robinhood:
 
 
         #Prompt for stock if not entered
-        if not stock:   #pragma: no cover
+        if not stock:   # pragma: no cover
             stock = input("Symbol: ")
 
         data = self.quote_data(stock)
@@ -326,7 +315,7 @@ class Robinhood:
         """Wrapper for quote_data """
 
         data = self.quote_data(stock)
-        return data["symbol"]
+        return data
 
     def get_historical_quotes(self, stock, interval, span, bounds=Bounds.REGULAR):
         """Fetch historical data for stock
@@ -352,15 +341,10 @@ class Robinhood:
         if isinstance(bounds, str):  # recast to Enum
             bounds = Bounds(bounds)
 
-        params = {
-            'symbols': ','.join(stock).upper(),
-            'interval': interval,
-            'span': span,
-            'bounds': bounds.name.lower()
-        }
+        historicals = endpoints.historicals() + "/?symbols=" + ','.join(stock).upper() + "&interval=" + interval + "&span=" + span + "&bounds=" + bounds.name.lower()
 
-        res = self.session.get(self.endpoints['historicals'], params=params)
-        return res.json()
+        res = self.session.get(historicals, timeout=15)
+        return res.json()['results'][0]
 
 
     def get_news(self, stock):
@@ -372,10 +356,10 @@ class Robinhood:
                 (:obj:`dict`) values returned from `news` endpoint
         """
 
-        return self.session.get(self.endpoints['news']+stock.upper()+"/").json()
+        return self.session.get(endpoints.news(stock.upper()), timeout=15).json()
 
 
-    def print_quote(self, stock=''):    #pragma: no cover
+    def print_quote(self, stock=''):    # pragma: no cover
         """Print quote information
             Args:
                 stock (str): ticker to fetch
@@ -384,14 +368,13 @@ class Robinhood:
                 None
         """
 
-        data = self.get_quote_list(stock,'symbol,last_trade_price')
+        data = self.get_quote_list(stock, 'symbol,last_trade_price')
         for item in data:
             quote_str = item[0] + ": $" + item[1]
-            print(quote_str)
             self.logger.info(quote_str)
 
 
-    def print_quotes(self, stocks): #pragma: no cover
+    def print_quotes(self, stocks):  # pragma: no cover
         """Print a collection of stocks
 
             Args:
@@ -421,7 +404,7 @@ class Robinhood:
                 (float): ask price
         """
 
-        return self.get_quote_list(stock,'ask_price')
+        return self.get_quote_list(stock, 'ask_price')
 
 
     def ask_size(self, stock=''):
@@ -437,7 +420,7 @@ class Robinhood:
                 (int): ask size
         """
 
-        return self.get_quote_list(stock,'ask_size')
+        return self.get_quote_list(stock, 'ask_size')
 
 
     def bid_price(self, stock=''):
@@ -453,7 +436,7 @@ class Robinhood:
                 (float): bid price
         """
 
-        return self.get_quote_list(stock,'bid_price')
+        return self.get_quote_list(stock, 'bid_price')
 
 
     def bid_size(self, stock=''):
@@ -469,7 +452,7 @@ class Robinhood:
                 (int): bid size
         """
 
-        return self.get_quote_list(stock,'bid_size')
+        return self.get_quote_list(stock, 'bid_size')
 
 
     def last_trade_price(self, stock=''):
@@ -485,7 +468,7 @@ class Robinhood:
                 (float): last trade price
         """
 
-        return self.get_quote_list(stock,'last_trade_price')
+        return self.get_quote_list(stock, 'last_trade_price')
 
 
     def previous_close(self, stock=''):
@@ -501,7 +484,7 @@ class Robinhood:
                 (float): previous closing price
         """
 
-        return self.get_quote_list(stock,'previous_close')
+        return self.get_quote_list(stock, 'previous_close')
 
 
     def previous_close_date(self, stock=''):
@@ -517,7 +500,7 @@ class Robinhood:
                 (str): previous close date
         """
 
-        return self.get_quote_list(stock,'previous_close_date')
+        return self.get_quote_list(stock, 'previous_close_date')
 
 
     def adjusted_previous_close(self, stock=''):
@@ -533,7 +516,7 @@ class Robinhood:
                 (float): adjusted previous closing price
         """
 
-        return self.get_quote_list(stock,'adjusted_previous_close')
+        return self.get_quote_list(stock, 'adjusted_previous_close')
 
 
     def symbol(self, stock=''):
@@ -549,7 +532,7 @@ class Robinhood:
                 (str): stock symbol
         """
 
-        return self.get_quote_list(stock,'symbol')
+        return self.get_quote_list(stock, 'symbol')
 
 
     def last_updated_at(self, stock=''):
@@ -589,7 +572,6 @@ class Robinhood:
 
         return result
 
-
     def get_account(self):
         """Fetch account information
 
@@ -597,8 +579,8 @@ class Robinhood:
                 (:obj:`dict`): `accounts` endpoint payload
         """
 
-        res = self.session.get(self.endpoints['accounts'])
-        res.raise_for_status()  #auth required
+        res = self.session.get(endpoints.accounts(), timeout=15)
+        res.raise_for_status()  # auth required
         res = res.json()
 
         return res['results'][0]
@@ -609,7 +591,72 @@ class Robinhood:
             Flat wrapper for fetching URL directly
         """
 
-        return self.session.get(url).json()
+        return self.session.get(url, timeout=15).json()
+
+    def get_popularity(self, stock=''):
+        """Get the number of robinhood users who own the given stock
+
+            Args:
+                stock (str): stock ticker
+
+            Returns:
+                (int): number of users who own the stock
+        """
+        stock_instrument = self.get_url(self.quote_data(stock)["instrument"])["id"]
+        return self.get_url(endpoints.instruments(stock_instrument, "popularity"))["num_open_positions"]
+
+    def get_tickers_by_tag(self, tag=None):
+        """Get a list of instruments belonging to a tag
+
+            Args: tag - Tags may include but are not limited to:
+                * top-movers
+                * etf
+                * 100-most-popular
+                * mutual-fund
+                * finance
+                * cap-weighted
+                * investment-trust-or-fund
+
+            Returns:
+                (List): a list of Ticker strings
+        """
+        instrument_list = self.get_url(endpoints.tags(tag))["instruments"]
+        return [self.get_url(instrument)["symbol"] for instrument in instrument_list]
+
+    ###########################################################################
+    #                           GET OPTIONS INFO
+    ###########################################################################
+
+    def get_options(self, stock, expiration_dates, option_type):
+        """Get a list (chain) of options contracts belonging to a particular stock
+
+            Args: stock ticker (str), list of expiration dates to filter on (YYYY-MM-DD), and whether or not its a 'put' or a 'call' option type (str).
+
+            Returns:
+                Options Contracts (List): a list (chain) of contracts for a given underlying equity instrument
+        """
+        instrument_id = self.get_url(self.quote_data(stock)["instrument"])["id"]
+        if (type(expiration_dates) == list):
+            _expiration_dates_string = ",".join(expiration_dates)
+        else:
+            _expiration_dates_string = expiration_dates
+        chain_id = self.get_url(endpoints.chain(instrument_id))["results"][0]["id"]
+        return [contract for contract in self.get_url(endpoints.options(chain_id, _expiration_dates_string, option_type))["results"]]
+
+    @login_required
+    def get_option_market_data(self, optionid):
+        """Gets a list of market data for a given optionid.
+
+        Args: (str) option id
+
+        Returns: dictionary of options market data.
+        """
+        market_data = {}
+        try:
+            market_data = self.get_url(endpoints.market_data(optionid)) or {}
+        except requests.exceptions.HTTPError:
+            raise RH_exception.InvalidOptionId()
+        return market_data
 
 
     ###########################################################################
@@ -627,14 +674,14 @@ class Robinhood:
         """
 
         #Prompt for stock if not entered
-        if not stock:   #pragma: no cover
+        if not stock:   # pragma: no cover
             stock = input("Symbol: ")
 
-        url = str(self.endpoints['fundamentals']) + str(stock.upper()) + "/"
+        url = str(endpoints.fundamentals(str(stock.upper())))
 
         #Check for validity of symbol
         try:
-            req = requests.get(url)
+            req = requests.get(url, timeout=15)
             req.raise_for_status()
             data = req.json()
         except requests.exceptions.HTTPError:
@@ -657,7 +704,7 @@ class Robinhood:
     def portfolios(self):
         """Returns the user's portfolio data """
 
-        req = self.session.get(self.endpoints['portfolios'])
+        req = self.session.get(endpoints.portfolios(), timeout=15)
         req.raise_for_status()
 
         return req.json()['results'][0]
@@ -759,15 +806,15 @@ class Robinhood:
 
         return float(self.portfolios()['market_value'])
 
-
-    def order_history(self):
+    @login_required
+    def order_history(self, orderId=None):
         """Wrapper for portfolios
-
+            Optional Args: add an order ID to retrieve information about a single order.
             Returns:
                 (:obj:`dict`): JSON dict from getting orders
         """
 
-        return self.session.get(self.endpoints['orders']).json()
+        return self.session.get(endpoints.orders(orderId), timeout=15).json()
 
 
     def dividends(self):
@@ -777,7 +824,7 @@ class Robinhood:
                 (:obj: `dict`): JSON dict from getting dividends
         """
 
-        return self.session.get(self.endpoints['dividends']).json()
+        return self.session.get(endpoints.dividends(), timeout=15).json()
 
 
     ###########################################################################
@@ -791,7 +838,7 @@ class Robinhood:
                 (:object: `dict`): JSON dict from getting positions
         """
 
-        return self.session.get(self.endpoints['positions']).json()
+        return self.session.get(endpoints.positions(), timeout=15).json()
 
 
     def securities_owned(self):
@@ -801,7 +848,7 @@ class Robinhood:
                 (:object: `dict`): Non-zero positions
         """
 
-        return self.session.get(self.endpoints['positions']+'?nonzero=true').json()
+        return self.session.get(endpoints.positions() + '?nonzero=true', timeout=15).json()
 
 
     ###########################################################################
@@ -811,11 +858,11 @@ class Robinhood:
     def place_order(self,
                     instrument,
                     quantity=1,
-                    bid_price=0.0,
+                    price=0.0,
                     transaction=None,
                     trigger='immediate',
                     order='market',
-                    time_in_force = 'gfd'):
+                    time_in_force='gfd'):
         """Place an order with Robinhood
 
             Notes:
@@ -841,13 +888,12 @@ class Robinhood:
         if isinstance(transaction, str):
             transaction = Transaction(transaction)
 
-        if not bid_price:
-            bid_price = self.quote_data(instrument['symbol'])['bid_price']
+        if not price:
+            price = self.quote_data(instrument['symbol'])['bid_price']
 
         payload = {
             'account': self.get_account()['url'],
             'instrument': unquote(instrument['url']),
-            'price': float(bid_price),
             'quantity': quantity,
             'side': transaction.name.lower(),
             'symbol': instrument['symbol'],
@@ -856,16 +902,12 @@ class Robinhood:
             'type': order.lower()
         }
 
-        #data = 'account=%s&instrument=%s&price=%f&quantity=%d&side=%s&symbol=%s#&time_in_force=gfd&trigger=immediate&type=market' % (
-        #    self.get_account()['url'],
-        #    urllib.parse.unquote(instrument['url']),
-        #    float(bid_price),
-        #    quantity,
-        #    transaction,
-        #    instrument['symbol']
-        #)
+        if order.lower() == "stop":
+            payload['stop_price'] = float(price)
+        else:
+            payload['price'] = float(price)
 
-        res = self.session.post(self.endpoints['orders'], data=payload)
+        res = self.session.post(endpoints.orders(), data=payload, timeout=15)
         res.raise_for_status()
 
         return res
@@ -915,10 +957,10 @@ class Robinhood:
     # These are new. Use at your own risk!
 
     def place_market_buy_order(self,
-                               instrument_URL = None,
-                               symbol = None,
-                               time_in_force = None,
-                               quantity = None):
+                               instrument_URL=None,
+                               symbol=None,
+                               time_in_force=None,
+                               quantity=None):
         """Wrapper for placing market buy orders
 
             Notes:
@@ -934,20 +976,20 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'market',
-                                 trigger = 'immediate',
-                                 side = 'buy',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='market',
+                                 trigger='immediate',
+                                 side='buy',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 quantity=quantity))
 
     def place_limit_buy_order(self,
-                              instrument_URL = None,
-                              symbol = None,
-                              time_in_force = None,
-                              price = None,
-                              quantity = None):
+                              instrument_URL=None,
+                              symbol=None,
+                              time_in_force=None,
+                              price=None,
+                              quantity=None):
         """Wrapper for placing limit buy orders
 
             Notes:
@@ -964,21 +1006,21 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'limit',
-                                 trigger = 'immediate',
-                                 side = 'buy',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 price = price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='limit',
+                                 trigger='immediate',
+                                 side='buy',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 price=price,
+                                 quantity=quantity))
 
     def place_stop_loss_buy_order(self,
-                                  instrument_URL = None,
-                                  symbol = None,
-                                  time_in_force = None,
-                                  stop_price = None,
-                                  quantity = None):
+                                  instrument_URL=None,
+                                  symbol=None,
+                                  time_in_force=None,
+                                  stop_price=None,
+                                  quantity=None):
         """Wrapper for placing stop loss buy orders
 
             Notes:
@@ -995,22 +1037,22 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'market',
-                                 trigger = 'stop',
-                                 side = 'buy',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 stop_price = stop_price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='market',
+                                 trigger='stop',
+                                 side='buy',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 stop_price=stop_price,
+                                 quantity=quantity))
 
     def place_stop_limit_buy_order(self,
-                                   instrument_URL = None,
-                                   symbol = None,
-                                   time_in_force = None,
-                                   stop_price = None,
-                                   price = None,
-                                   quantity = None):
+                                   instrument_URL=None,
+                                   symbol=None,
+                                   time_in_force=None,
+                                   stop_price=None,
+                                   price=None,
+                                   quantity=None):
         """Wrapper for placing stop limit buy orders
 
             Notes:
@@ -1028,21 +1070,21 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'limit',
-                                 trigger = 'stop',
-                                 side = 'buy',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 stop_price = stop_price,
-                                 price = price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='limit',
+                                 trigger='stop',
+                                 side='buy',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 stop_price=stop_price,
+                                 price=price,
+                                 quantity=quantity))
 
     def place_market_sell_order(self,
-                                instrument_URL = None,
-                                symbol = None,
-                                time_in_force = None,
-                                quantity = None):
+                                instrument_URL=None,
+                                symbol=None,
+                                time_in_force=None,
+                                quantity=None):
         """Wrapper for placing market sell orders
 
             Notes:
@@ -1058,20 +1100,20 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'market',
-                                 trigger = 'immediate',
-                                 side = 'sell',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 quantity= quantity))
+        return(self.submit_order(order_type='market',
+                                 trigger='immediate',
+                                 side='sell',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 quantity=quantity))
 
     def place_limit_sell_order(self,
-                               instrument_URL = None,
-                               symbol = None,
-                               time_in_force = None,
-                               price = None,
-                               quantity = None):
+                               instrument_URL=None,
+                               symbol=None,
+                               time_in_force=None,
+                               price=None,
+                               quantity=None):
         """Wrapper for placing limit sell orders
 
             Notes:
@@ -1088,21 +1130,21 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'limit',
-                                 trigger = 'immediate',
-                                 side = 'sell',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 price = price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='limit',
+                                 trigger='immediate',
+                                 side='sell',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 price=price,
+                                 quantity=quantity))
 
     def place_stop_loss_sell_order(self,
-                                   instrument_URL = None,
-                                   symbol = None,
-                                   time_in_force = None,
-                                   stop_price = None,
-                                   quantity = None):
+                                   instrument_URL=None,
+                                   symbol=None,
+                                   time_in_force=None,
+                                   stop_price=None,
+                                   quantity=None):
         """Wrapper for placing stop loss sell orders
 
             Notes:
@@ -1119,22 +1161,22 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'market',
-                                 trigger = 'stop',
-                                 side = 'sell',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 stop_price = stop_price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='market',
+                                 trigger='stop',
+                                 side='sell',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 stop_price=stop_price,
+                                 quantity=quantity))
 
     def place_stop_limit_sell_order(self,
-                                    instrument_URL = None,
-                                    symbol = None,
-                                    time_in_force = None,
-                                    price = None,
-                                    stop_price = None,
-                                    quantity = None):
+                                    instrument_URL=None,
+                                    symbol=None,
+                                    time_in_force=None,
+                                    price=None,
+                                    stop_price=None,
+                                    quantity=None):
         """Wrapper for placing stop limit sell orders
 
             Notes:
@@ -1152,26 +1194,26 @@ class Robinhood:
             Returns:
                 (:obj:`requests.request`): result from `orders` put command
         """
-        return(self.submit_order(order_type = 'limit',
-                                 trigger = 'stop',
-                                 side = 'sell',
-                                 instrument_URL = instrument_URL,
-                                 symbol = symbol,
-                                 time_in_force = time_in_force,
-                                 stop_price = stop_price,
-                                 price = price,
-                                 quantity = quantity))
+        return(self.submit_order(order_type='limit',
+                                 trigger='stop',
+                                 side='sell',
+                                 instrument_URL=instrument_URL,
+                                 symbol=symbol,
+                                 time_in_force=time_in_force,
+                                 stop_price=stop_price,
+                                 price=price,
+                                 quantity=quantity))
 
     def submit_order(self,
-                     instrument_URL = None,
-                     symbol = None,
-                     order_type = None,
-                     time_in_force = None,
-                     trigger = None,
-                     price = None,
-                     stop_price = None,
-                     quantity = None,
-                     side = None):
+                     instrument_URL=None,
+                     symbol=None,
+                     order_type=None,
+                     time_in_force=None,
+                     trigger=None,
+                     price=None,
+                     stop_price=None,
+                     quantity=None,
+                     side=None):
         """Submits order to Robinhood
 
             Notes:
@@ -1204,21 +1246,31 @@ class Robinhood:
                 (:obj:`requests.request`): result from `orders` put command
         """
 
+        # Used for default price input
+        # Price is required, so we use the current bid price if it is not specified
+        current_quote = self.get_quote(symbol)
+        current_bid_price = current_quote['bid_price']
+
         # Start with some parameter checks. I'm paranoid about $.
         if(instrument_URL is None):
             if(symbol is None):
-                raise(valueError('Neither instrument_URL nor symbol were passed to submit_order'))
-            instrument_URL = self.instruments(symbol)[0]['url']
+                raise(ValueError('Neither instrument_URL nor symbol were passed to submit_order'))
+            for result in self.instruments(symbol):
+                if result['symbol'].upper() == symbol.upper() :
+                    instrument_URL = result['url']
+                    break
+            if(instrument_URL is None):
+                raise(ValueError('instrument_URL could not be defined. Symbol %s not found' % symbol))
 
         if(symbol is None):
-            symbol = self.session.get(instrument_URL).json()['symbol']
+            symbol = self.session.get(instrument_URL, timeout=15).json()['symbol']
 
         if(side is None):
-            raise(valueError('Order is neither buy nor sell in call to submit_order'))
+            raise(ValueError('Order is neither buy nor sell in call to submit_order'))
 
-        if(order_type == None):
-            if(price == None):
-                if(stop_price == None):
+        if(order_type is None):
+            if(price is None):
+                if(stop_price is None):
                     order_type = 'market'
                 else:
                     order_type = 'limit'
@@ -1230,58 +1282,122 @@ class Robinhood:
         side = str(side).lower()
 
         if(order_type != 'market') and (order_type != 'limit'):
-            raise(valueError('Invalid order_type in call to submit_order'))
+            raise(ValueError('Invalid order_type in call to submit_order'))
 
         if(order_type == 'limit'):
             if(price is None):
-                raise(valueError('Limit order has no price in call to submit_order'))
+                raise(ValueError('Limit order has no price in call to submit_order'))
             if(price <= 0):
-                raise(valueError('Price must be positive number in call to submit_order'))
+                raise(ValueError('Price must be positive number in call to submit_order'))
 
         if(trigger == 'stop'):
             if(stop_price is None):
-                raise(valueError('Stop order has no stop_price in call to submit_order'))
+                raise(ValueError('Stop order has no stop_price in call to submit_order'))
             if(price <= 0):
-                raise(valueError('Stop_price must be positive number in call to submit_order'))
+                raise(ValueError('Stop_price must be positive number in call to submit_order'))
 
         if(stop_price is not None):
             if(trigger != 'stop'):
-                raise(valueError('Stop price set for non-stop order in call to submit_order'))
+                raise(ValueError('Stop price set for non-stop order in call to submit_order'))
 
         if(price is None):
             if(order_type == 'limit'):
-                raise(valueError('Limit order has no price in call to submit_order'))
+                raise(ValueError('Limit order has no price in call to submit_order'))
 
         if(price is not None):
             if(order_type.lower() == 'market'):
-                raise(valueError('Market order has price limit in call to submit_order'))
-
-        price = float(price)
+                raise(ValueError('Market order has price limit in call to submit_order'))
+            price = float(price)
+        else:
+            price = current_bid_price # default to current bid price
 
         if(quantity is None):
-            raise(valueError('No quantity specified in call to submit_order'))
+            raise(ValueError('No quantity specified in call to submit_order'))
 
         quantity = int(quantity)
 
         if(quantity <= 0):
-            raise(valueError('Quantity must be positive number in call to submit_order'))
+            raise(ValueError('Quantity must be positive number in call to submit_order'))
 
         payload = {}
 
-        for field,value in [('account',self.get_account()['url']),
-                            ('instrument',instrument_URL),
-                            ('symbol',symbol),
-                            ('type',order_type),
-                            ('time_in_force', time_in_force),
-                            ('trigger',trigger),
-                            ('price',price),
-                            ('stop_price',stop_price),
-                            ('quantity',quantity),
-                            ('side',side)]:
+        for field, value in [
+                ('account', self.get_account()['url']),
+                ('instrument', instrument_URL),
+                ('symbol', symbol),
+                ('type', order_type),
+                ('time_in_force', time_in_force),
+                ('trigger', trigger),
+                ('price', price),
+                ('stop_price', stop_price),
+                ('quantity', quantity),
+                ('side', side)
+            ]:
             if(value is not None):
                 payload[field] = value
 
-        res = self.session.post(self.endpoints['orders'], data=payload)
+        print(payload)
+
+        res = self.session.post(endpoints.orders(), data=payload, timeout=15)
         res.raise_for_status()
 
         return res
+
+    ##############################
+    #                          CANCEL ORDER
+    ##############################
+
+    def cancel_order(
+            self,
+            order_id):
+        """
+        Cancels specified order and returns the response (results from `orders` command).
+        If order cannot be cancelled, `None` is returned.
+        Args:
+            order_id (str or dict): Order ID string that is to be cancelled or open order dict returned from
+            order get.
+        Returns:
+            (:obj:`requests.request`): result from `orders` put command
+        """
+        if isinstance(order_id, str):
+            try:
+                order = self.session.get(endpoints.orders() + order_id, timeout=15).json()
+            except (requests.exceptions.HTTPError) as err_msg:
+                raise ValueError('Failed to get Order for ID: ' + order_id
+                    + '\n Error message: '+ repr(err_msg))
+
+            if order.get('cancel') is not None:
+                try:
+                    res = self.session.post(order['cancel'], timeout=15)
+                    res.raise_for_status()
+                    return res
+                except (requests.exceptions.HTTPError) as err_msg:
+                    raise ValueError('Failed to cancel order ID: ' + order_id
+                         + '\n Error message: '+ repr(err_msg))
+                    return None
+
+        if isinstance(order_id, dict):
+            order_id = order_id['id']
+            try:
+                order = self.session.get(endpoints.orders() + order_id, timeout=15).json()
+            except (requests.exceptions.HTTPError) as err_msg:
+                raise ValueError('Failed to get Order for ID: ' + order_id
+                    + '\n Error message: '+ repr(err_msg))
+
+            if order.get('cancel') is not None:
+                try:
+                    res = self.session.post(order['cancel'], timeout=15)
+                    res.raise_for_status()
+                    return res
+                except (requests.exceptions.HTTPError) as err_msg:
+                    raise ValueError('Failed to cancel order ID: ' + order_id
+                         + '\n Error message: '+ repr(err_msg))
+                    return None
+
+        elif not isinstance(order_id, str) or not isinstance(order_id, dict):
+            raise ValueError('Cancelling orders requires a valid order_id string or open order dictionary')
+
+
+        # Order type cannot be cancelled without a valid cancel link
+        else:
+            raise ValueError('Unable to cancel order ID: ' + order_id)

@@ -33,7 +33,7 @@ def order_item_info(order, rb_client, db):
 
 def get_all_history_orders(rb_client):
     orders = []
-    past_orders = rb.order_history()
+    past_orders = rb_client.order_history()
     orders.extend(past_orders['results'])
     while past_orders['next']:
         print("{} order fetched".format(len(orders)))
@@ -55,4 +55,3 @@ with open('orders.csv', 'w') as output_file:
     dict_writer = csv.DictWriter(output_file, keys)
     dict_writer.writeheader()
     dict_writer.writerows(orders)
-

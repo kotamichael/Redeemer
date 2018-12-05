@@ -1,11 +1,17 @@
+'''          <<<<<<<<<<<<<<<<<<   T O   D O   L I S T  >>>>>>>>>>>>>>>>>>>>>>>
+
+ [1]. When archiving the files, programmatically change the keys to numbers to maximize storage (e.g. "1": "AAPL") and create a map.
+'''
+
+
 redeemer = """\n\n\n\n
 
      :::::::..  .,:::::::::::::-.   .,:::::: .,::::::  .        :   .,::::::  :::::::..   
      ;;;;``;;;; ;;;;""`" ;;,   `';,,;;;;""`" ;;;;""`"  ;;,.    ;;;  ;;;;""`"  ;;;;``;;;;  
-      [[[,/[[['  [[cccc  `[[     [[  [[cccc   [[cccc   [[[[, ,[[[[,  [[cccc    [[[,/[[['  
+      $$$,/$$$'  $$cccc  `$$     $$  $$cccc   $$cccc   $$$$, ,$$$$,  $$cccc    $$$,/$$$'  
       $$$$$$c    $$""`"   $$,    $$  $$""`"   $$""`"   $$$$$$$$"$$$  $$""`"    $$$$$$c    
-      888b "88bo,888oo,__ 888_,o8P'  888oo,__ 888oo,__ 888 Y88" 888o8888ooo,__ 8888b 88bo,
-      MMMM   "W" ""`"YUMMMMMMMP"`    ""`"YUMMM`"'"YUMMMMMM  M'  "MMM"'""YUMMMMMMMM   "WW"  
+      $$$b "$$;.,$$$::,__ $$$_,c$$'  $$$cc,__ $$$cc,__ $$$ $$$" $$$c$$$$ccc,__ $$$$; $$;.,
+      $$$$   "$" ""`"$$$$$$$$$$"`    ""`"$$$$$`"'"$$$$$$$$  $'  "$$$"'""$$$$$$$$$$   "$$"  
          
 """
 
@@ -27,7 +33,7 @@ import os
 my_trader = Robinhood();
 
 #LOGIN Place your credentials here:
-my_trader.login(username="dsm080993@gmail.com", password="iy'LaCAQpfdX")
+my_trader.login(username="USERNAME", password="PASSWORD")
 
 #List of stock symbols. Substitute for those which you desire.
 fieldsToGlean = 'MSFT','GOOG','AAPL','FB','TSLA','EBAY','BAC'
@@ -144,7 +150,7 @@ the default times. Set the startup ahead one interval of running, because Ruth w
 wait one run interval before starting. E.g. if she's set to run once every minute, set
 the start time one minute ahead of that desired; for 20 seconds, set her 20 seconds ahead.
 '''
-schedule.every().day.at("9:29").do(opening_bell)
+schedule.every().day.at("9:00").do(opening_bell)
 schedule.every().day.at("16:30").do(closing_bell)
 
 while True:
