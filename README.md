@@ -162,7 +162,7 @@ In order to customize these files, you're going to need a text editor (used for 
 
 In order to edit which stocks Ruth gleans, you simply update the ```fieldsToGlean``` list at the top of the file:
 
-![alt text](https://i.imgur.com/OszCqLu.png)
+![alt text](https://i.imgur.com/qq35mO9.jpg)
 
 In order to change the interval at which Ruth gleans, go to the bottom of the file and change the number and time unit to whatever you desire.
 

@@ -67,7 +67,7 @@ def glean(stock):
 
 	data = []
 
-	#Beautifies the maneuver which places the Update time as the index
+	#Convert to Time Stamp
 	timeStamp = (quote_info["updated_at"])
 
 	#Sets time-based variables for use in the directory structure
@@ -150,7 +150,7 @@ the default times. Set the startup ahead one interval of running, because Ruth w
 wait one run interval before starting. E.g. if she's set to run once every minute, set
 the start time one minute ahead of that desired; for 20 seconds, set her 20 seconds ahead.
 '''
-schedule.every().day.at("9:00").do(opening_bell)
+schedule.every().day.at("12:48").do(opening_bell)
 schedule.every().day.at("16:30").do(closing_bell)
 
 while True:
