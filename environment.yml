@@ -1,4 +1,4 @@
-name: base
+name: redeemer
 channels:
   - defaults
 dependencies:
