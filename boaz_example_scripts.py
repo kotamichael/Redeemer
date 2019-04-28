@@ -6,7 +6,6 @@ from boaz import my_trader
 stock_instrument = my_trader.instruments("MSFT")[0]
 
 #Get a stock's quote
-###### HERE's an example of a comment for use in the tutorial today I love you eric
 my_trader.print_quote("AAPL")
 
 #Prompt user for a symbol
